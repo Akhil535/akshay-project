@@ -18,7 +18,6 @@ function App() {
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/collection" element={<Collection />} />
           </Routes>
-          
         </main>
         <Footer />
       </div>
