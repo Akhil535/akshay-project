@@ -1,22 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
+const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose, weight: initialWeight = '' }) => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    weight: '',
+    weight: initialWeight,
     customizationDays: '7',
     specialRequests: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Update weight when initialWeight prop changes
+  useEffect(() => {
+    if (initialWeight && initialWeight > 0) {
+      setFormData(prev => ({
+        ...prev,
+        weight: initialWeight
+      }));
+    }
+  }, [initialWeight]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Validate weight
+      const weight = parseFloat(formData.weight);
+      if (isNaN(weight) || weight <= 0) {
+        alert('Please enter a valid weight greater than 0');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Calculate price
+      const estimatedPrice = calculatePrice(weight);
+      
       // Using FormSubmit.co - FREE service
       const response = await fetch('https://formsubmit.co/ajax/interactwithakshay@gmail.com', {
         method: 'POST',
@@ -28,14 +49,14 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
           name: formData.name,
           phone: formData.phone,
           email: formData.email,
-          product: product.name,
-          gold_karat: selectedKarat,
-          weight: formData.weight,
+          product: product?.name || 'Custom Jewelry',
+          gold_karat: selectedKarat || '22K',
+          weight: weight,
           customization_days: formData.customizationDays,
           special_requests: formData.specialRequests,
-          estimated_price: `AED ${calculatePrice(formData.weight || 0)}`,
+          estimated_price: `AED ${estimatedPrice}`,
           delivery_date: getDeliveryDate(formData.customizationDays),
-          _subject: `💎 Custom Jewelry Order - ${product.name} - ${formData.name}`,
+          _subject: `💎 Custom Jewelry Order - ${product?.name || 'Custom'} - ${formData.name}`,
           _template: 'table'
         })
       });
@@ -58,31 +79,58 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    // For weight input, validate it's a number
+    if (name === 'weight') {
+      // Allow empty or valid numbers
+      if (value === '' || !isNaN(parseFloat(value))) {
+        setFormData({
+          ...formData,
+          [name]: value
+        });
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const calculatePrice = (weight) => {
     if (!weight || weight <= 0) return '0';
-    const goldPrice = weight * currentGoldPrice;
-    const makingCost = weight * product.makingCharge;
-    return (goldPrice + makingCost).toFixed(2);
+    
+    // Use provided currentGoldPrice or default to 22K price
+    const goldPricePerGram = currentGoldPrice || 230; // Default to 22K price
+    const makingCharge = product?.makingCharge || 30; // Default making charge
+    
+    const goldValue = weight * goldPricePerGram;
+    const makingCost = weight * makingCharge;
+    return (goldValue + makingCost).toFixed(2);
   };
 
   const getDeliveryDate = (days) => {
     const date = new Date();
     date.setDate(date.getDate() + parseInt(days));
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
+
+  // Parse weight safely
+  const parsedWeight = parseFloat(formData.weight);
+  const isValidWeight = !isNaN(parsedWeight) && parsedWeight > 0;
 
   return (
     <div className="inquiry-modal">
       <div className="inquiry-form">
         <h2>Custom Jewelry Inquiry</h2>
-        <p style={{textAlign: 'center', marginBottom: '20px', color: '#666'}}>
-          For: {product.name} ({selectedKarat})
+        <p style={{textAlign: 'center', marginBottom: '20px', color: 'var(--text-muted)'}}>
+          For: {product?.name || 'Custom Jewelry'} ({selectedKarat || '22K'})
         </p>
         
         <form onSubmit={handleSubmit}>
@@ -107,6 +155,8 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
               onChange={handleChange}
               required
               placeholder="Enter your phone number"
+              pattern="[0-9]{10,}"
+              title="Please enter a valid phone number (at least 10 digits)"
             />
           </div>
 
@@ -123,24 +173,39 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
           </div>
 
           <div className="form-group">
-            <label>Desired Weight (grams)</label>
+            <label>Desired Weight (grams) *</label>
             <input
               type="number"
               name="weight"
               value={formData.weight}
               onChange={handleChange}
-              min="1"
+              min="0.1"
               step="0.1"
-              placeholder="Enter weight in grams"
+              required
+              placeholder="e.g., 8.5"
+              inputMode="decimal"
             />
+            {formData.weight && !isValidWeight && (
+              <small style={{color: 'var(--gold-primary)', marginTop: '5px', display: 'block'}}>
+                Please enter a valid weight greater than 0
+              </small>
+            )}
           </div>
 
-          {formData.weight && formData.weight > 0 && (
+          {isValidWeight && (
             <div className="price-calculator">
               <div style={{textAlign: 'center'}}>
-                <div>Estimated Price: <span className="price-highlight">AED {calculatePrice(formData.weight)}</span></div>
-                <div style={{marginTop: '10px', fontSize: '0.9rem'}}>
-                  Delivery: {getDeliveryDate(formData.customizationDays)}
+                <div style={{fontSize: '1.1rem', marginBottom: '5px'}}>
+                  Estimated Price: 
+                  <span className="price-highlight" style={{marginLeft: '10px'}}>
+                    AED {calculatePrice(parsedWeight)}
+                  </span>
+                </div>
+                <div style={{marginTop: '10px', fontSize: '0.9rem', color: 'var(--text-muted)'}}>
+                  📅 Delivery: {getDeliveryDate(formData.customizationDays)}
+                </div>
+                <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '5px'}}>
+                  Based on {selectedKarat || '22K'} gold
                 </div>
               </div>
             </div>
@@ -153,12 +218,12 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
               value={formData.customizationDays}
               onChange={handleChange}
             >
-              <option value="5">5 days (Express)</option>
+              <option value="5">5 days (Express) +15%</option>
               <option value="7">7 days (Standard)</option>
               <option value="10">10 days (Detailed Work)</option>
               <option value="14">14 days (Complex Design)</option>
             </select>
-            <small style={{color: '#666', marginTop: '5px', display: 'block'}}>
+            <small style={{color: 'var(--text-muted)', marginTop: '5px', display: 'block'}}>
               Estimated delivery: {getDeliveryDate(formData.customizationDays)}
             </small>
           </div>
@@ -170,26 +235,21 @@ const InquiryForm = ({ product, selectedKarat, currentGoldPrice, onClose }) => {
               value={formData.specialRequests}
               onChange={handleChange}
               rows="4"
-              placeholder="Tell us about your design preferences, stone choices, etc."
+              placeholder="Tell us about your design preferences, stone choices, engraving, etc."
             />
           </div>
 
-          {/* {formData.weight && formData.weight > 0 && (
-            <div className="price-calculator">
-              <div style={{textAlign: 'center'}}>
-                <div>Estimated Price: <span className="price-highlight">AED {calculatePrice(formData.weight)}</span></div>
-                <div style={{marginTop: '10px', fontSize: '0.9rem'}}>
-                  Delivery: {getDeliveryDate(formData.customizationDays)}
-                </div>
-              </div>
-            </div>
-          )} */}
-
           <div className="form-buttons">
-            <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Sending...' : 'Submit Inquiry'}
+            <button 
+              type="submit" 
+              disabled={isSubmitting || !isValidWeight}
+              style={{ opacity: (!isValidWeight || isSubmitting) ? 0.7 : 1 }}
+            >
+              {isSubmitting ? 'Sending... ✨' : '✨ Submit Inquiry'}
             </button>
-            <button type="button" onClick={onClose}>Cancel</button>
+            <button type="button" onClick={onClose} style={{background: 'rgba(108, 117, 125, 0.8)'}}>
+              Cancel
+            </button>
           </div>
         </form>
       </div>
