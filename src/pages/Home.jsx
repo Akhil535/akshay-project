@@ -42,7 +42,7 @@ const Home = () => {
 
       {/* Story Section */}
       <section className="simple-section" style={{background: 'var(--bg-secondary)'}}>
-        <h2>The Aura Philosophy</h2>
+        <h2 className="section-title" >The Aura Philosophy</h2>
         <div className="section-divider"></div>
         <p style={{fontSize: '1.1rem', color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto'}}>
           We believe true luxury isn't just about shine; it's about the story. Our pieces are inspired by the organic beauty of the natural world—the way sunlight hits a golden field or the unbreakable strength of a diamond. Each piece is custom-made to your specifications.
