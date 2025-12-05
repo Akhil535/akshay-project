@@ -1996,3 +1996,121 @@ textarea:focus-visible {
   color: var(--bg-main);
   text-shadow: none;
 }
+
+
+/* Additional styles for enhanced content */
+.content-features {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feature-icon {
+  color: #d4af37;
+  font-size: 1.2rem;
+}
+
+.feature-text {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.ring-overlay-info {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  opacity: 0.8;
+}
+
+.overlay-text {
+  background: rgba(0,0,0,0.7);
+  color: #f1dda4;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  font-family: 'Cinzel', serif;
+}
+
+.wedding-features {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 600px;
+}
+
+.wedding-feature h4 {
+  color: #f1dda4;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  font-family: 'Cinzel', serif;
+}
+
+.wedding-feature p {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.cta-buttons {
+  display: flex;
+  margin-top: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .wedding-features {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .ring-overlay-info {
+    gap: 15px;
+    bottom: 10px;
+  }
+  
+  .overlay-text {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .cta-buttons a {
+    margin-left: 0 !important;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-features {
+    margin-top: 20px;
+    gap: 10px;
+  }
+  
+  .feature-text {
+    font-size: 0.9rem;
+  }
+  
+  .wedding-features {
+    margin-top: 20px;
+  }
+}
