@@ -450,6 +450,20 @@ section {
   overflow: hidden;
 }
 
+/* .banner-image{
+   height: 100vh; 
+  min-height: 600px;
+  background-image: url('../src/assets/banner.jpeg');
+  background-position: center; 
+  background-size: cover;
+  background-attachment: fixed;
+  display: flex; 
+  align-items: center; 
+  position: relative;
+  margin-top: 80px;
+  overflow: hidden;
+} */
+
 .hero::before {
   content: ''; 
   position: absolute; 
